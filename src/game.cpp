@@ -1,6 +1,5 @@
 #include "game.h"
 void Game::menu() {
-    // Art::art();
     string usrInp;
     cout << "\nEnter:\n1. 'P' to play\n2. 'R' for Rules\n3. 'H' for Help\n4.'q' to quit\n";
     cout << ">> ";cin >> usrInp;
@@ -35,9 +34,17 @@ void Game::menu() {
 void Game::init() {
     Player::setCards();
     Computer::setCards();
+    cout << "Available money: " << money << endl;
+    cout << "Enter your bid: ";cin >> bid;
+    if (bid > money) {
+        cout << "You cannot bid more than your available money: " << endl;
+        cout << "Enter your bid: ";cin >> bid;
+    }
+
 }
 
 void Game::play() {
+    gameCount++;
     system("clear");
     Art::art();
     cout << setw(65);
@@ -48,30 +55,36 @@ void Game::play() {
     Computer::showCards();
 
     do {
-        cout << "\nHIT OR STAND?\nEnter:\n1. 'h' or 'H' for HIT\n2. Other key for STAND\n>> ";cin >> hitOrStand;
-        if (Computer::calcCards() < 17)
-            Computer::onHit();
+        cout << "\n\nHIT OR STAND?\nEnter:\n1. 'H' or 'h' for HIT\n2. 'S' or 's' for STAND\n3. 'P' or 'p' to SPLIT\n\n>> ";cin >> hitOrStand;
+        // while (Computer::calcCards() < 17)
+        //     Computer::onHit();
         if (hitOrStand == "H" || hitOrStand == "h") {
             Player::onHit();
             Player::showCards();
             Computer::showCards();
             if (Player::calcCards() == 21) {
                 cout << "\n\nYou got BLACKJACK! You WON!!" << endl;
+                money += bid;
+                cout << "\nAvailable money: " << money << endl;
+
                 playAgain();
             }
 
             else if (Player::calcCards() > 21) {
-                cout << endl << Player::calcCards() << endl;
-                cout << Computer::calcCards() << endl;
+                cout << endl << "Your total: " << Player::calcCards() << endl;
+                cout << "Dealer's total: " << Computer::calcCards() << endl;
+                money -= bid;
                 cout << "\nDealer WON!" << endl;
-                playAgain();
+                cout << "\nAvailable money: " << money << endl;
 
+                playAgain();
             }
         }
         else {
+            while (Computer::calcCards() < 17)
+                Computer::onHit();
             chooseWinner();
             playAgain();
-
         }
 
     } while (hitOrStand == "H" || hitOrStand == "h");
@@ -85,29 +98,48 @@ void Game::chooseWinner() {
 
 
     if ((Player::calcCards() > Computer::calcCards() || Computer::calcCards() > 21) && Player::calcCards() <= 21) {
-        Player::bid *= 1.5;
+        money += bid;
         cout << "You WON!" << endl;
+        cout << "\nAvailable money: " << money << endl;
     }
     else if ((Player::calcCards() < Computer::calcCards() || Player::calcCards() > 21) && Computer::calcCards() <= 21) {
         cout << "Dealer WON!" << endl;
+        money -= bid;
+        cout << "\nAvailable money: " << money << endl;
+
     }
 
     else if (Player::calcCards() == Computer::calcCards()) {
         cout << "Drawn";
+        cout << "\nAvailable money: " << money << endl;
+
     }
 
 }
 
+void Game::resultMenu() {
+    cout << "====Your game results======" << endl;
+    cout << "Total hands: " << gameCount << endl;
+    if (money > 1000)
+        cout << "Money won: " << (money - 1000) << endl;
+    else
+        cout << "Money lost: " << (1000 - money) << endl;
+}
+
 void Game::playAgain() {
     string usrInput;
-    cout << "\n\nWanna continue to play? 'Y' for YES and 'N' for NO >>";
+    cout << "\n\nPlay AGAIN? 'Y' for YES and 'N' for NO >> ";
     cin >> usrInput;
-    if (usrInput == "Y" || usrInput == "y")
+    if ((usrInput == "Y" || usrInput == "y") && money > 0)
         play();
     else {
         system("clear");
         Art::art();
+        if (money < 0)
+            cout << "==============YOU WERE OUT OF MONEY==========" << endl;
+        resultMenu();
+        money = 1000;
+        gameCount = 0;
         menu();
     }
-
 }
