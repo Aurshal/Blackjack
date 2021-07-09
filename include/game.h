@@ -23,6 +23,7 @@ public:
     void playAgain();
     void chooseWinner();
     void resultMenu();
+    void hitOrStandMenu();
 };
 
 
